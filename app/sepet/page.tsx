@@ -74,13 +74,11 @@ export default function SepetPage() {
                   </div>
                 </div>
 
-                <Button
-                  className="w-full mt-6"
-                  disabled={true}
-                  onClick={() => alert("Ödeme sistemi yakında aktif olacaktır.")}
-                >
-                  Ödemeye Geç (Yakında)
-                </Button>
+                <Link href="/odeme">
+                  <Button className="w-full mt-6" disabled={items.length === 0}>
+                    Ödemeye Geç
+                  </Button>
+                </Link>
 
                 <div className="mt-6">
                   <h3 className="font-medium mb-2">İndirim Kuponu</h3>

@@ -4,14 +4,17 @@ import type React from "react"
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
+import Script from "next/script"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { useCart } from "@/context/cart-context"
-import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
 import { PaymentLogos } from "@/components/payment-logos"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { PayTRForm } from "@/components/payment/paytr-form"
+import { IyzicoForm } from "@/components/payment/iyzico-form"
 
 export default function OdemePage() {
   const { items, totalItems, totalPrice, clearCart } = useCart()
@@ -23,6 +26,7 @@ export default function OdemePage() {
     phone: "",
     address: "",
   })
+  const [paymentProvider, setPaymentProvider] = useState<"iyzico" | "paytr">("iyzico")
 
   // Kargo ücreti hesaplama
   const kargo = totalItems > 0 ? 150 : 0
@@ -40,88 +44,6 @@ export default function OdemePage() {
     setFormData((prev) => ({ ...prev, [name]: value }))
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-
-    if (items.length === 0) {
-      alert("Sepetiniz boş!")
-      return
-    }
-
-    try {
-      setLoading(true)
-
-      // Sipariş ID oluştur
-      const orderId = `ORD${Date.now()}`
-
-      // PayTR token'ı al
-      const response = await fetch("/api/paytr/token", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          orderId,
-          cartItems: items,
-          userEmail: formData.email,
-          totalAmount: genelToplam,
-        }),
-      })
-
-      const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.error || "Ödeme işlemi başlatılamadı")
-      }
-
-      // PayTR iframe'ini oluştur
-      const iframe = document.createElement("iframe")
-      iframe.src = `https://www.paytr.com/odeme/guvenli/${data.token}`
-      iframe.id = "paytriframe"
-      iframe.frameBorder = "0"
-      iframe.width = "100%"
-      iframe.height = "100%"
-      iframe.style.display = "block"
-
-      // Mevcut iframe varsa kaldır
-      const existingIframe = document.getElementById("paytr-iframe-container")
-      if (existingIframe) {
-        existingIframe.innerHTML = ""
-        existingIframe.appendChild(iframe)
-      } else {
-        // Yeni container oluştur
-        const container = document.createElement("div")
-        container.id = "paytr-iframe-container"
-        container.style.position = "fixed"
-        container.style.top = "0"
-        container.style.left = "0"
-        container.style.width = "100%"
-        container.style.height = "100%"
-        container.style.zIndex = "9999"
-        container.style.backgroundColor = "rgba(0,0,0,0.5)"
-        container.appendChild(iframe)
-        document.body.appendChild(container)
-      }
-
-      // PayTR iframe mesajlarını dinle
-      window.addEventListener("message", (e) => {
-        if (e.origin.indexOf("paytr.com") !== -1) {
-          if (e.data === "close_iframe") {
-            const container = document.getElementById("paytr-iframe-container")
-            if (container) {
-              document.body.removeChild(container)
-            }
-          }
-        }
-      })
-    } catch (error) {
-      console.error("Ödeme hatası:", error)
-      alert("Ödeme işlemi sırasında bir hata oluştu. Lütfen tekrar deneyin.")
-    } finally {
-      setLoading(false)
-    }
-  }
-
   return (
     <div className="flex min-h-screen flex-col">
       <Header />
@@ -134,7 +56,7 @@ export default function OdemePage() {
 
           <div className="grid lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2">
-              <form onSubmit={handleSubmit} className="space-y-6">
+              <div className="space-y-6">
                 <div className="bg-muted/30 rounded-lg p-6">
                   <h2 className="text-lg font-semibold mb-4">Kişisel Bilgiler</h2>
 
@@ -188,10 +110,38 @@ export default function OdemePage() {
                   </div>
                 </div>
 
-                <Button type="submit" className="w-full" disabled={loading || items.length === 0}>
-                  {loading ? "İşleniyor..." : "Ödeme Yap"}
-                </Button>
-              </form>
+                <div className="bg-muted/30 rounded-lg p-6">
+                  <h2 className="text-lg font-semibold mb-4">Ödeme Yöntemi</h2>
+
+                  <Tabs
+                    defaultValue="iyzico"
+                    onValueChange={(value) => setPaymentProvider(value as "iyzico" | "paytr")}
+                  >
+                    <TabsList className="grid grid-cols-2 mb-6">
+                      <TabsTrigger value="iyzico">iyzico</TabsTrigger>
+                      <TabsTrigger value="paytr">PayTR</TabsTrigger>
+                    </TabsList>
+                    <TabsContent value="iyzico">
+                      <IyzicoForm
+                        userInfo={formData}
+                        cartItems={items}
+                        totalAmount={genelToplam}
+                        loading={loading}
+                        setLoading={setLoading}
+                      />
+                    </TabsContent>
+                    <TabsContent value="paytr">
+                      <PayTRForm
+                        userInfo={formData}
+                        cartItems={items}
+                        totalAmount={genelToplam}
+                        loading={loading}
+                        setLoading={setLoading}
+                      />
+                    </TabsContent>
+                  </Tabs>
+                </div>
+              </div>
             </div>
 
             <div>
@@ -224,6 +174,16 @@ export default function OdemePage() {
         </div>
       </main>
       <Footer />
+
+      {/* PayTR için iframe container */}
+      <div id="paytr-iframe-container" className="hidden"></div>
+
+      {/* iyzico için gerekli script */}
+      <Script
+        id="iyzico-checkout-form"
+        src="https://sandbox-static.iyzipay.com/checkoutform/v2/bundle.js"
+        strategy="afterInteractive"
+      />
     </div>
   )
 }
