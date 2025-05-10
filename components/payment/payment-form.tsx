@@ -10,23 +10,28 @@ import { Button } from "@/components/ui/button"
 import type { CartItem } from "@/context/cart-context"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { AlertCircle } from "lucide-react"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
-interface IyzicoFormProps {
-  userInfo: {
-    email: string
-    name: string
-    phone: string
-    address: string
-  }
+interface PaymentFormProps {
   cartItems: CartItem[]
   totalAmount: number
   loading: boolean
   setLoading: (loading: boolean) => void
 }
 
-export function IyzicoForm({ userInfo, cartItems, totalAmount, loading, setLoading }: IyzicoFormProps) {
+export function PaymentForm({ cartItems, totalAmount, loading, setLoading }: PaymentFormProps) {
   const router = useRouter()
   const [error, setError] = useState<string | null>(null)
+
+  // Kullanıcı bilgileri
+  const [userInfo, setUserInfo] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    address: "",
+  })
+
+  // Kart bilgileri
   const [cardData, setCardData] = useState({
     cardHolderName: "",
     cardNumber: "",
@@ -55,7 +60,14 @@ export function IyzicoForm({ userInfo, cartItems, totalAmount, loading, setLoadi
     }
   }, [])
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Kullanıcı bilgileri değişikliği
+  const handleUserInfoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target
+    setUserInfo((prev) => ({ ...prev, [name]: value }))
+  }
+
+  // Kart bilgileri değişikliği
+  const handleCardDataChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
 
     // Kart numarası için format kontrolü
@@ -91,8 +103,15 @@ export function IyzicoForm({ userInfo, cartItems, totalAmount, loading, setLoadi
     }
   }
 
+  // Form gönderimi
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+
+    // Kullanıcı bilgilerini kontrol et
+    if (!userInfo.name || !userInfo.email || !userInfo.phone || !userInfo.address) {
+      setError("Lütfen tüm kişisel bilgileri doldurun.")
+      return
+    }
 
     // Kart bilgilerini kontrol et
     if (
@@ -103,12 +122,6 @@ export function IyzicoForm({ userInfo, cartItems, totalAmount, loading, setLoadi
       !cardData.cvc
     ) {
       setError("Lütfen tüm kart bilgilerini doldurun.")
-      return
-    }
-
-    // Kişisel bilgileri kontrol et
-    if (!userInfo.email || !userInfo.name || !userInfo.phone || !userInfo.address) {
-      setError("Lütfen tüm kişisel bilgileri doldurun.")
       return
     }
 
@@ -228,7 +241,7 @@ export function IyzicoForm({ userInfo, cartItems, totalAmount, loading, setLoadi
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-6">
       {error && (
         <Alert variant="destructive">
           <AlertCircle className="h-4 w-4" />
@@ -236,80 +249,143 @@ export function IyzicoForm({ userInfo, cartItems, totalAmount, loading, setLoadi
         </Alert>
       )}
 
-      <div className="space-y-2">
-        <Label htmlFor="cardHolderName">Kart Sahibinin Adı Soyadı</Label>
-        <Input
-          id="cardHolderName"
-          name="cardHolderName"
-          value={cardData.cardHolderName}
-          onChange={handleInputChange}
-          required
-        />
-      </div>
+      <Tabs defaultValue="personal" className="w-full">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="personal">Kişisel Bilgiler</TabsTrigger>
+          <TabsTrigger value="payment">Ödeme Bilgileri</TabsTrigger>
+        </TabsList>
 
-      <div className="space-y-2">
-        <Label htmlFor="cardNumber">Kart Numarası</Label>
-        <Input
-          id="cardNumber"
-          name="cardNumber"
-          value={cardData.cardNumber}
-          onChange={handleInputChange}
-          placeholder="XXXX XXXX XXXX XXXX"
-          maxLength={16}
-          required
-        />
-      </div>
+        <TabsContent value="personal" className="space-y-4 mt-4">
+          <div className="space-y-2">
+            <Label htmlFor="name">Ad Soyad</Label>
+            <Input
+              id="name"
+              name="name"
+              value={userInfo.name}
+              onChange={handleUserInfoChange}
+              placeholder="Ad Soyad"
+              required
+            />
+          </div>
 
-      <div className="grid grid-cols-3 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor="expireMonth">Son Kullanma Ay</Label>
-          <Input
-            id="expireMonth"
-            name="expireMonth"
-            value={cardData.expireMonth}
-            onChange={handleInputChange}
-            placeholder="MM"
-            maxLength={2}
-            required
-          />
-        </div>
+          <div className="space-y-2">
+            <Label htmlFor="email">E-posta Adresi</Label>
+            <Input
+              id="email"
+              name="email"
+              type="email"
+              value={userInfo.email}
+              onChange={handleUserInfoChange}
+              placeholder="ornek@mail.com"
+              required
+            />
+          </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="expireYear">Son Kullanma Yıl</Label>
-          <Input
-            id="expireYear"
-            name="expireYear"
-            value={cardData.expireYear}
-            onChange={handleInputChange}
-            placeholder="YY"
-            maxLength={2}
-            required
-          />
-        </div>
+          <div className="space-y-2">
+            <Label htmlFor="phone">Telefon Numarası</Label>
+            <Input
+              id="phone"
+              name="phone"
+              value={userInfo.phone}
+              onChange={handleUserInfoChange}
+              placeholder="05XX XXX XX XX"
+              required
+            />
+          </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="cvc">CVC</Label>
-          <Input
-            id="cvc"
-            name="cvc"
-            value={cardData.cvc}
-            onChange={handleInputChange}
-            placeholder="XXX"
-            maxLength={3}
-            required
-          />
-        </div>
-      </div>
+          <div className="space-y-2">
+            <Label htmlFor="address">Adres</Label>
+            <Input
+              id="address"
+              name="address"
+              value={userInfo.address}
+              onChange={handleUserInfoChange}
+              placeholder="Adres"
+              required
+            />
+          </div>
+        </TabsContent>
+
+        <TabsContent value="payment" className="space-y-4 mt-4">
+          <div className="space-y-2">
+            <Label htmlFor="cardHolderName">Kart Sahibinin Adı Soyadı</Label>
+            <Input
+              id="cardHolderName"
+              name="cardHolderName"
+              value={cardData.cardHolderName}
+              onChange={handleCardDataChange}
+              placeholder="Kart Üzerindeki İsim"
+              required
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="cardNumber">Kart Numarası</Label>
+            <Input
+              id="cardNumber"
+              name="cardNumber"
+              value={cardData.cardNumber}
+              onChange={handleCardDataChange}
+              placeholder="XXXX XXXX XXXX XXXX"
+              maxLength={16}
+              required
+            />
+          </div>
+
+          <div className="grid grid-cols-3 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="expireMonth">Son Kullanma Ay</Label>
+              <Input
+                id="expireMonth"
+                name="expireMonth"
+                value={cardData.expireMonth}
+                onChange={handleCardDataChange}
+                placeholder="MM"
+                maxLength={2}
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="expireYear">Son Kullanma Yıl</Label>
+              <Input
+                id="expireYear"
+                name="expireYear"
+                value={cardData.expireYear}
+                onChange={handleCardDataChange}
+                placeholder="YY"
+                maxLength={2}
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="cvc">CVC</Label>
+              <Input
+                id="cvc"
+                name="cvc"
+                value={cardData.cvc}
+                onChange={handleCardDataChange}
+                placeholder="XXX"
+                maxLength={3}
+                required
+              />
+            </div>
+          </div>
+        </TabsContent>
+      </Tabs>
 
       <div className="bg-yellow-50 border border-yellow-200 rounded p-3 text-sm text-yellow-800">
         <p className="font-medium">Test Kartı Bilgileri:</p>
         <p>Kart No: 5528790000000008</p>
         <p>Son Kullanma: 12/30</p>
         <p>CVC: 123</p>
+        <p>3D Secure Şifre: 123456</p>
+        <p className="mt-2 font-medium">Üye İşyeri Numarası: 100947379</p>
       </div>
 
       <Button type="submit" className="w-full" disabled={loading}>
-        {loading ? "İşleniyor..." : "Ödeme Yap"}
+        {loading ? "İşleniyor..." : `${totalAmount.toLocaleString("tr-TR")} ₺ Öde`}
       </Button>
     </form>
   )
