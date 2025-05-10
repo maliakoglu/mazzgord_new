@@ -1,4 +1,5 @@
 import Link from "next/link"
+import { PaymentLogos } from "@/components/payment-logos"
 
 export function Footer() {
   return (
@@ -10,6 +11,9 @@ export function Footer() {
             <p className="text-sm text-muted-foreground">
               Özgün sanat eserleri ile yaşam alanlarınıza değer katıyorum.
             </p>
+            <div className="mt-4">
+              <PaymentLogos />
+            </div>
           </div>
           <div>
             <h3 className="font-semibold mb-3">Hızlı Bağlantılar</h3>
@@ -45,11 +49,6 @@ export function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="/iletisim" className="text-muted-foreground hover:text-foreground">
-                  İletişim
-                </Link>
-              </li>
-              <li>
                 <Link href="/kargo-teslimat" className="text-muted-foreground hover:text-foreground">
                   Kargo ve Teslimat
                 </Link>
@@ -57,6 +56,16 @@ export function Footer() {
               <li>
                 <Link href="/iade-politikasi" className="text-muted-foreground hover:text-foreground">
                   İade Politikası
+                </Link>
+              </li>
+              <li>
+                <Link href="/gizlilik-politikasi" className="text-muted-foreground hover:text-foreground">
+                  Gizlilik Politikası
+                </Link>
+              </li>
+              <li>
+                <Link href="/sss" className="text-muted-foreground hover:text-foreground">
+                  Sıkça Sorulan Sorular
                 </Link>
               </li>
             </ul>

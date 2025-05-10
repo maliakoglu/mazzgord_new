@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input"
 import { Separator } from "@/components/ui/separator"
 import { useCart } from "@/context/cart-context"
 import { CartItemComponent } from "@/components/cart-item"
+import { PaymentLogos } from "@/components/payment-logos"
 
 export default function SepetPage() {
   const { items, totalItems, totalPrice, clearCart } = useCart()
@@ -73,13 +74,11 @@ export default function SepetPage() {
                   </div>
                 </div>
 
-                <Button
-                  className="w-full mt-6"
-                  disabled={true}
-                  onClick={() => alert("Ödeme sistemi yakında aktif olacaktır.")}
-                >
-                  Ödemeye Geç (Yakında)
-                </Button>
+                <Link href="/odeme">
+                  <Button className="w-full mt-6" disabled={items.length === 0}>
+                    Ödemeye Geç
+                  </Button>
+                </Link>
 
                 <div className="mt-6">
                   <h3 className="font-medium mb-2">İndirim Kuponu</h3>
@@ -91,18 +90,8 @@ export default function SepetPage() {
               </div>
 
               <div className="mt-6">
-                <h3 className="font-medium mb-2">Ödeme Seçenekleri</h3>
-                <div className="flex flex-wrap gap-2">
-                  <div className="border rounded p-2 w-16 h-10 flex items-center justify-center bg-white">
-                    <span className="text-xs font-medium">Visa</span>
-                  </div>
-                  <div className="border rounded p-2 w-16 h-10 flex items-center justify-center bg-white">
-                    <span className="text-xs font-medium">MasterCard</span>
-                  </div>
-                  <div className="border rounded p-2 w-16 h-10 flex items-center justify-center bg-white">
-                    <span className="text-xs font-medium">Havale</span>
-                  </div>
-                </div>
+                <h3 className="font-medium mb-4">Ödeme Seçenekleri</h3>
+                <PaymentLogos />
               </div>
             </div>
           </div>

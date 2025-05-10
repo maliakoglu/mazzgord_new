@@ -1,4 +1,5 @@
 import type React from "react"
+import { Suspense } from "react"
 import "@/components/ui/scrollbar-hide.css"
 import "@/app/globals.css"
 import { Inter } from "next/font/google"
@@ -26,7 +27,11 @@ export default function RootLayout({
       <body className={inter.className}>
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
           <SearchProvider>
-            <CartProvider>{children}</CartProvider>
+            <CartProvider>
+              <Suspense fallback={<div className="flex items-center justify-center min-h-screen">Yükleniyor...</div>}>
+                {children}
+              </Suspense>
+            </CartProvider>
           </SearchProvider>
         </ThemeProvider>
       </body>

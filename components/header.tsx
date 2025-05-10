@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, Suspense } from "react"
 import Link from "next/link"
 import { ShoppingCart, User, Search, Menu, X } from "lucide-react"
 
@@ -77,7 +77,9 @@ export function Header() {
         <div className="flex items-center gap-2">
           {isSearching ? (
             <div className="hidden md:flex relative w-40 lg:w-64">
-              <SearchBar />
+              <Suspense fallback={<div className="w-40 lg:w-64 h-10 bg-muted animate-pulse rounded-full"></div>}>
+                <SearchBar />
+              </Suspense>
               <Button
                 variant="ghost"
                 size="icon"
