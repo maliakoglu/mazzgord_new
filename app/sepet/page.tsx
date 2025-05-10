@@ -1,49 +1,22 @@
-import Image from "next/image"
+"use client"
 import Link from "next/link"
-import { Trash2, Plus, Minus } from "lucide-react"
+import { ShoppingBag } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { Input } from "@/components/ui/input"
 import { Separator } from "@/components/ui/separator"
+import { useCart } from "@/context/cart-context"
+import { CartItemComponent } from "@/components/cart-item"
+import { PaymentLogos } from "@/components/payment-logos"
 
 export default function SepetPage() {
-  // Örnek sepet verileri
-  const sepetUrunleri = [
-    {
-      id: 1,
-      isim: "Doğa Manzarası",
-      teknik: "Tuval üzerine akrilik",
-      boyut: "50x70cm",
-      fiyat: 2500,
-      adet: 1,
-      image: "/images/tablolar/doga.webp",
-    },
-    {
-      id: 3,
-      isim: "Deniz Manzarası",
-      teknik: "Tuval üzerine akrilik",
-      boyut: "70x100cm",
-      fiyat: 4500,
-      adet: 1,
-      image: "/images/tablolar/deniz.webp",
-    },
-    {
-      id: 5,
-      isim: "Tepeler",
-      teknik: "Tuval üzerine yağlı boya",
-      boyut: "60x90cm",
-      fiyat: 4200,
-      adet: 1,
-      image: "/images/tablolar/tepe.webp",
-    },
-  ]
+  const { items, totalItems, totalPrice, clearCart } = useCart()
 
-  // Toplam fiyat hesaplama
-  const toplam = sepetUrunleri.reduce((acc, urun) => acc + urun.fiyat * urun.adet, 0)
-  const kargo = 150
-  const genelToplam = toplam + kargo
+  // Kargo ücreti hesaplama
+  const kargo = totalItems > 0 ? 150 : 0
+  const genelToplam = totalPrice + kargo
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -57,46 +30,21 @@ export default function SepetPage() {
 
           <div className="grid lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2">
-              {sepetUrunleri.length > 0 ? (
+              {items.length > 0 ? (
                 <div className="space-y-6">
-                  {sepetUrunleri.map((urun) => (
-                    <div key={urun.id} className="flex flex-col sm:flex-row gap-4 border-b pb-6">
-                      <div className="relative w-full sm:w-32 h-32 rounded-md overflow-hidden flex-shrink-0">
-                        <Image src={urun.image || "/placeholder.svg"} alt={urun.isim} fill className="object-cover" />
-                      </div>
-                      <div className="flex-1">
-                        <div className="flex flex-col sm:flex-row sm:justify-between">
-                          <div>
-                            <h3 className="font-medium text-lg">{urun.isim}</h3>
-                            <p className="text-sm text-muted-foreground">
-                              {urun.teknik}, {urun.boyut}
-                            </p>
-                          </div>
-                          <div className="mt-2 sm:mt-0 text-right">
-                            <p className="font-semibold">{urun.fiyat.toLocaleString("tr-TR")} ₺</p>
-                          </div>
-                        </div>
-                        <div className="flex justify-between items-center mt-4">
-                          <div className="flex items-center border rounded-md">
-                            <Button variant="ghost" size="icon" className="h-8 w-8 rounded-none">
-                              <Minus className="h-4 w-4" />
-                            </Button>
-                            <span className="w-8 text-center flex items-center justify-center">{urun.adet}</span>
-                            <Button variant="ghost" size="icon" className="h-8 w-8 rounded-none">
-                              <Plus className="h-4 w-4" />
-                            </Button>
-                          </div>
-                          <Button variant="ghost" size="icon" className="text-destructive">
-                            <Trash2 className="h-4 w-4" />
-                            <span className="sr-only">Ürünü kaldır</span>
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
+                  {items.map((item) => (
+                    <CartItemComponent key={item.id} item={item} />
                   ))}
+
+                  <div className="flex justify-end mt-4">
+                    <Button variant="outline" className="text-destructive" onClick={clearCart}>
+                      Sepeti Temizle
+                    </Button>
+                  </div>
                 </div>
               ) : (
-                <div className="text-center py-12">
+                <div className="text-center py-12 border rounded-lg">
+                  <ShoppingBag className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
                   <h2 className="text-xl font-semibold mb-2">Sepetiniz Boş</h2>
                   <p className="text-muted-foreground mb-6">Sepetinizde henüz ürün bulunmamaktadır.</p>
                   <Link href="/galeri">
@@ -113,7 +61,7 @@ export default function SepetPage() {
                 <div className="space-y-3">
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Ara Toplam</span>
-                    <span>{toplam.toLocaleString("tr-TR")} ₺</span>
+                    <span>{totalPrice.toLocaleString("tr-TR")} ₺</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Kargo</span>
@@ -126,7 +74,11 @@ export default function SepetPage() {
                   </div>
                 </div>
 
-                <Button className="w-full mt-6">Ödemeye Geç</Button>
+                <Link href="/odeme">
+                  <Button className="w-full mt-6" disabled={items.length === 0}>
+                    Ödemeye Geç
+                  </Button>
+                </Link>
 
                 <div className="mt-6">
                   <h3 className="font-medium mb-2">İndirim Kuponu</h3>
@@ -138,18 +90,8 @@ export default function SepetPage() {
               </div>
 
               <div className="mt-6">
-                <h3 className="font-medium mb-2">Ödeme Seçenekleri</h3>
-                <div className="flex flex-wrap gap-2">
-                  <div className="border rounded p-2 w-16 h-10 flex items-center justify-center bg-white">
-                    <span className="text-xs font-medium">Visa</span>
-                  </div>
-                  <div className="border rounded p-2 w-16 h-10 flex items-center justify-center bg-white">
-                    <span className="text-xs font-medium">MasterCard</span>
-                  </div>
-                  <div className="border rounded p-2 w-16 h-10 flex items-center justify-center bg-white">
-                    <span className="text-xs font-medium">Havale</span>
-                  </div>
-                </div>
+                <h3 className="font-medium mb-4">Ödeme Seçenekleri</h3>
+                <PaymentLogos />
               </div>
             </div>
           </div>

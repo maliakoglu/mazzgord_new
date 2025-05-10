@@ -11,32 +11,30 @@ export default function HakkimdaPage() {
           <h1 className="text-3xl md:text-4xl font-bold mb-6">Hakkımda</h1>
 
           <div className="grid md:grid-cols-2 gap-8 items-start mb-12">
-            <div className="relative aspect-square md:aspect-auto md:h-[500px] rounded-lg overflow-hidden">
-              <Image src="/images/sanatci.webp" alt="Mazzgord" fill className="object-cover" />
+            <div className="relative h-[400px] rounded-lg overflow-hidden bg-black flex items-center justify-center">
+              <Image src="/images/logo.jpg" alt="Mazzgord" width={400} height={400} className="object-contain" />
             </div>
             <div>
               <h2 className="text-2xl font-bold mb-4">Mazzgord</h2>
               <div className="space-y-4 text-muted-foreground">
                 <p>
-                  Merhaba, ben Mazzgord. Sanat yolculuğuma 15 yıl önce İstanbul'da başladım. Resim yapmak benim için
-                  sadece bir hobi değil, aynı zamanda duyguları, düşünceleri ve hikayeleri ifade etmenin en güçlü yolu.
+                  Merhaba, ben Mazzgord. Sanat yolculuğuma 2000'li yılların başında, lise yıllarımda başladım. Resim
+                  yapmak, benim için sadece bir hobi değil, aynı zamanda duyguları, düşünceleri ve hikayeleri ifade
+                  etmenin en güçlü yoluydu. Eserlerimde genellikle doğanın güzelliklerini, insan duygularını ve yaşamın
+                  farklı yönlerini tuvalime yansıtmaya çalışıyorum. Her bir tablom, kişisel hikayelerden ve
+                  deneyimlerden ilham alarak şekilleniyor.
                 </p>
                 <p>
-                  Eserlerimde genellikle doğanın güzelliklerini, insan duygularını ve yaşamın farklı yönlerini tuvalime
-                  yansıtmaya çalışıyorum. Her bir tablom, kişisel hikayelerden ve deneyimlerden ilham alarak ortaya
-                  çıkıyor.
+                  Sanat eğitimimi, ilk resim öğretmenlerimden ve okuldaki diğer öğretmenlerimden aldım. Üniversitede
+                  Anadolu Üniversitesi Çalışma Ekonomisi bölümünde okudum, fakat resimle ilgim hiç bitmedi. Zamanla
+                  eserlerimi, çeşitli sergilerde sanatseverlerle buluşturma fırsatı buldum.
                 </p>
                 <p>
-                  Sanat eğitimimi Mimar Sinan Güzel Sanatlar Üniversitesi'nde tamamladıktan sonra, çeşitli sergilerde
-                  eserlerimi sanatseverlerle buluşturma fırsatı buldum. Yurt içi ve yurt dışında birçok koleksiyonda
-                  eserlerim bulunmaktadır.
+                  Tablolarımda, canlı renkler ve dinamik fırça darbeleriyle izleyicilere duygusal bir deneyim sunmayı
+                  amaçlıyorum. Akrilik, karakalem, yağlı boya ve karışık teknik kullanarak farklı dokular ve derinlikler
+                  yaratmayı seviyorum. Sanatımın, sizlere ilham vermesi ve yaşam alanlarınıza değer katması en büyük
+                  dileğimdir.
                 </p>
-                <p>
-                  Tablolarımda genellikle canlı renkler ve dinamik fırça darbeleri kullanarak izleyicilere duygusal bir
-                  deneyim sunmayı amaçlıyorum. Akrilik, yağlı boya ve karışık teknik kullanarak farklı dokular ve
-                  derinlikler yaratmayı seviyorum.
-                </p>
-                <p>Sanatımın sizlere ilham vermesi ve yaşam alanlarınıza değer katması en büyük dileğimdir.</p>
               </div>
             </div>
           </div>

@@ -10,7 +10,7 @@ import { ImageModal } from "@/components/image-modal"
 export default function KoleksiyonlarPage() {
   const [selectedImage, setSelectedImage] = useState<{ src: string; alt: string } | null>(null)
 
-  // Örnek koleksiyon verileri
+  // Koleksiyon verilerini güncelle
   const koleksiyonlar = [
     {
       id: 1,
@@ -18,9 +18,9 @@ export default function KoleksiyonlarPage() {
       aciklama:
         "Doğanın muhteşem renklerinden ve dokularından ilham alan bu koleksiyon, izleyiciyi doğal dünyanın güzellikleri üzerine düşünmeye davet ediyor.",
       resimSayisi: 8,
-      image: "/images/koleksiyonlar/doga-serisi.webp",
+      image: "/images/koleksiyonlar/doga-serisi.jpg",
       ornekler: [
-        "/images/tablolar/doga.webp",
+        "/images/koleksiyonlar/doga-serisi.jpg",
         "/images/tablolar/tepe.webp",
         "/images/tablolar/dag.webp",
         "/images/tablolar/gokyuzu.webp",
@@ -32,12 +32,12 @@ export default function KoleksiyonlarPage() {
       aciklama:
         "İnsan duygularını soyut formlar ve canlı renklerle ifade eden bu seri, izleyicinin kendi duygusal deneyimlerini keşfetmesini sağlıyor.",
       resimSayisi: 12,
-      image: "/images/koleksiyonlar/soyut-duygular.webp",
+      image: "/images/koleksiyonlar/soyut-duygular.jpg",
       ornekler: [
-        "/images/kategoriler/soyut.webp",
-        "/images/kategoriler/modern.webp",
-        "/images/kategoriler/izlenimci.webp",
-        "/images/kategoriler/karisik-teknik.webp",
+        "/images/koleksiyonlar/soyut-duygular1.jpg",
+        "/images/koleksiyonlar/soyut-duygular2.jpg",
+        "/images/koleksiyonlar/soyut-duygular3.jpg",
+        "/images/koleksiyonlar/soyut-duygular.jpg",
       ],
     },
     {
@@ -46,12 +46,12 @@ export default function KoleksiyonlarPage() {
       aciklama:
         "Modern şehir yaşamının dinamizmini ve karmaşasını yansıtan bu koleksiyon, kentsel mekanların ritmini ve enerjisini tuval üzerine taşıyor.",
       resimSayisi: 6,
-      image: "/images/koleksiyonlar/sehir-manzaralari.webp",
+      image: "/images/koleksiyonlar/sehir-manzaralari.jpg",
       ornekler: [
-        "/images/tablolar/tarihi-yerler.webp",
-        "/images/kategoriler/manzara.webp",
-        "/images/kategoriler/modern.webp",
-        "/images/kategoriler/izlenimci.webp",
+        "/images/koleksiyonlar/şehir-manzaralari1.jpg",
+        "/images/koleksiyonlar/şehir-manzaralari2.jpg",
+        "/images/koleksiyonlar/şehir-manzaralari3.jpg",
+        "/images/koleksiyonlar/sehir-manzaralari.jpg",
       ],
     },
     {
@@ -60,12 +60,12 @@ export default function KoleksiyonlarPage() {
       aciklama:
         "Sadeliğin gücünü vurgulayan bu seri, minimal formlar ve renk paletleri kullanarak derinlikli anlatımlar sunuyor.",
       resimSayisi: 9,
-      image: "/images/koleksiyonlar/minimalist-kompozisyonlar.webp",
+      image: "/images/koleksiyonlar/minimalist-kompozisyonlar.jpg",
       ornekler: [
-        "/images/kategoriler/soyut.webp",
-        "/images/kategoriler/modern.webp",
-        "/images/kategoriler/figuratif.webp",
-        "/images/kategoriler/karisik-teknik.webp",
+        "/images/koleksiyonlar/minimalist-kompozisyonlar1.jpg",
+        "/images/koleksiyonlar/minimalist-kompozisyonlar2.jpg",
+        "/images/koleksiyonlar/minimalist-kompozisyonlar3.jpg",
+        "/images/koleksiyonlar/minimalist-kompozisyonlar4.jpg",
       ],
     },
   ]
@@ -82,7 +82,19 @@ export default function KoleksiyonlarPage() {
 
           <div className="space-y-12">
             {koleksiyonlar.map((koleksiyon) => (
-              <div key={koleksiyon.id} className="group">
+              <div
+                key={koleksiyon.id}
+                className="group"
+                id={
+                  koleksiyon.id === 1
+                    ? "doga-serisi"
+                    : koleksiyon.id === 2
+                      ? "soyut-duygular"
+                      : koleksiyon.id === 3
+                        ? "sehir-manzaralari"
+                        : "minimalist-kompozisyonlar"
+                }
+              >
                 <div className="grid md:grid-cols-2 gap-6 items-center">
                   <div className="relative aspect-video overflow-hidden rounded-lg">
                     <Image

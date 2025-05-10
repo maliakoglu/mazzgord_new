@@ -3,14 +3,19 @@
 import { useState } from "react"
 import Link from "next/link"
 import Image from "next/image"
-import { ChevronLeft, ChevronRight, ShoppingCart, User, Search, Menu } from "lucide-react"
+import { ChevronLeft, ChevronRight, ShoppingCart } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { ImageModal } from "@/components/image-modal"
+import { useCart } from "@/context/cart-context"
+import { Header } from "@/components/header"
+import { Footer } from "@/components/footer"
 
 export default function HomePage() {
   const [selectedImage, setSelectedImage] = useState<{ src: string; alt: string } | null>(null)
+  const { addItem } = useCart()
+  const [isHovered, setIsHovered] = useState(false)
 
   const featuredItems = [
     {
@@ -63,6 +68,7 @@ export default function HomePage() {
     },
   ]
 
+  // Koleksiyon kategorilerini güncelle
   const categories = [
     { name: "Soyut", image: "/images/kategoriler/soyut.webp" },
     { name: "Manzara", image: "/images/kategoriler/manzara.webp" },
@@ -74,65 +80,21 @@ export default function HomePage() {
     { name: "Karışık Teknik", image: "/images/kategoriler/karisik-teknik.webp" },
   ]
 
+  const handleAddToCart = (item: any) => {
+    addItem({
+      id: item.id,
+      name: item.name,
+      technique: item.technique,
+      size: item.size,
+      price: item.price,
+      image: item.image,
+    })
+  }
+
   return (
     <div className="flex min-h-screen flex-col">
       {/* Header */}
-      <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container mx-auto px-6 md:px-8 flex h-16 items-center justify-between">
-          <div className="flex md:hidden">
-            <Button variant="ghost" size="icon" className="mr-2">
-              <Menu className="h-5 w-5" />
-              <span className="sr-only">Menüyü aç</span>
-            </Button>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <Link href="/" className="flex items-center">
-              <span className="text-xl font-bold">Mazzgord</span>
-            </Link>
-            <nav className="hidden md:flex items-center gap-6 text-sm ml-6">
-              <Link href="/" className="font-medium transition-colors hover:text-primary">
-                Ana Sayfa
-              </Link>
-              <Link href="/galeri" className="font-medium text-muted-foreground transition-colors hover:text-primary">
-                Galeri
-              </Link>
-              <Link href="/hakkimda" className="font-medium text-muted-foreground transition-colors hover:text-primary">
-                Hakkımda
-              </Link>
-              <Link
-                href="/koleksiyonlar"
-                className="font-medium text-muted-foreground transition-colors hover:text-primary"
-              >
-                Koleksiyonlar
-              </Link>
-              <Link href="/iletisim" className="font-medium text-muted-foreground transition-colors hover:text-primary">
-                İletişim
-              </Link>
-            </nav>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <div className="hidden md:flex relative w-40 lg:w-64">
-              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-              <Input type="search" placeholder="Ara..." className="w-full pl-8 rounded-full bg-muted" />
-            </div>
-            <Button variant="ghost" size="icon">
-              <User className="h-5 w-5" />
-              <span className="sr-only">Hesap</span>
-            </Button>
-            <Link href="/sepet">
-              <Button variant="ghost" size="icon" className="relative">
-                <ShoppingCart className="h-5 w-5" />
-                <span className="sr-only">Sepet</span>
-                <span className="absolute top-0 right-0 h-4 w-4 rounded-full bg-primary text-[10px] font-medium text-primary-foreground flex items-center justify-center">
-                  3
-                </span>
-              </Button>
-            </Link>
-          </div>
-        </div>
-      </header>
+      <Header />
 
       <main className="flex-1">
         {/* Hero Section */}
@@ -154,9 +116,52 @@ export default function HomePage() {
                 hikayeleri tuval üzerinde hayata geçiriyor.
               </p>
               <Link href="/galeri">
-                <Button size="lg" className="bg-white text-black hover:bg-white/90">
-                  Galeriyi Keşfet
-                </Button>
+                <div
+                  className="relative group"
+                  onMouseEnter={() => setIsHovered(true)}
+                  onMouseLeave={() => setIsHovered(false)}
+                >
+                  <div className="absolute -inset-0.5 bg-gradient-to-r from-yellow-400 via-amber-500 to-yellow-600 rounded-lg blur opacity-60 group-hover:opacity-100 transition duration-1000 group-hover:duration-300 animate-pulse"></div>
+                  <button
+                    className={`relative px-8 py-4 bg-black text-white rounded-lg leading-none flex items-center divide-x divide-gray-600 ${
+                      isHovered ? "scale-105" : ""
+                    } transition-transform duration-300`}
+                  >
+                    <span className="flex items-center space-x-2">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className={`h-6 w-6 ${isHovered ? "animate-bounce" : ""} transition-all duration-300`}
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                        />
+                      </svg>
+                      <span className="pr-6 text-lg font-semibold">Galeriyi Keşfet</span>
+                    </span>
+                    <span className="pl-6 text-yellow-400 group-hover:text-yellow-300 transition duration-300">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className={`h-6 w-6 ${isHovered ? "translate-x-2" : ""} transition-transform duration-300`}
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M14 5l7 7m0 0l-7 7m7-7H3"
+                        />
+                      </svg>
+                    </span>
+                  </button>
+                </div>
               </Link>
             </div>
           </div>
@@ -202,8 +207,8 @@ export default function HomePage() {
                         {item.technique}, {item.size}
                       </p>
                       <div className="mt-1 flex justify-between items-center">
-                        <span className="font-semibold">10 ₺</span>
-                        <Button size="sm" variant="ghost">
+                        <span className="font-semibold">{item.price.toLocaleString("tr-TR")} ₺</span>
+                        <Button size="sm" onClick={() => handleAddToCart(item)}>
                           <ShoppingCart className="h-4 w-4 mr-2" />
                           Sepete Ekle
                         </Button>
@@ -221,19 +226,78 @@ export default function HomePage() {
           <div className="container mx-auto px-6 md:px-8">
             <h2 className="text-2xl md:text-3xl font-bold mb-8">Kategorilere Göre Keşfet</h2>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-              {categories.map((category) => (
+              {[
+                {
+                  name: "Soyut",
+                  image: "/images/koleksiyonlar/soyut-duygular.jpg",
+                  link: "/koleksiyonlar#soyut-duygular",
+                },
+                { name: "Manzara", image: "/images/koleksiyonlar/doga-serisi.jpg", link: "/koleksiyonlar#doga-serisi" },
+                {
+                  name: "Şehir",
+                  image: "/images/koleksiyonlar/sehir-manzaralari.jpg",
+                  link: "/koleksiyonlar#sehir-manzaralari",
+                },
+                {
+                  name: "Minimalist",
+                  image: "/images/koleksiyonlar/minimalist-kompozisyonlar.jpg",
+                  link: "/koleksiyonlar#minimalist-kompozisyonlar",
+                },
+                {
+                  name: "Renkli Soyut",
+                  image: "/images/koleksiyonlar/soyut-duygular1.jpg",
+                  link: "/koleksiyonlar#soyut-duygular",
+                },
+                {
+                  name: "Kelebek",
+                  image: "/images/koleksiyonlar/soyut-duygular3.jpg",
+                  link: "/koleksiyonlar#soyut-duygular",
+                },
+                {
+                  name: "İstanbul",
+                  image: "/images/koleksiyonlar/şehir-manzaralari3.jpg",
+                  link: "/koleksiyonlar#sehir-manzaralari",
+                },
+                {
+                  name: "Liman Kenti",
+                  image: "/images/koleksiyonlar/şehir-manzaralari2.jpg",
+                  link: "/koleksiyonlar#sehir-manzaralari",
+                },
+              ].map((category) => (
                 <div key={category.name} className="relative h-40 rounded-lg overflow-hidden group">
-                  <Image
-                    src={category.image || "/placeholder.svg"}
-                    alt={category.name}
-                    fill
-                    className="object-cover cursor-pointer"
+                  <Link href={category.link}>
+                    <div className="relative w-full h-full">
+                      <Image
+                        src={category.image || "/placeholder.svg"}
+                        alt={category.name}
+                        fill
+                        className="object-cover transition-transform duration-300 group-hover:scale-105"
+                      />
+                      <div className="absolute inset-0 bg-black/30 group-hover:bg-black/50 transition-colors" />
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <h3 className="text-white font-medium text-lg">{category.name}</h3>
+                      </div>
+                    </div>
+                  </Link>
+                  <button
                     onClick={() => setSelectedImage({ src: category.image, alt: category.name })}
-                  />
-                  <div className="absolute inset-0 bg-black/30 group-hover:bg-black/50 transition-colors" />
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <h3 className="text-white font-medium text-lg">{category.name}</h3>
-                  </div>
+                    className="absolute top-2 right-2 bg-black/50 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity z-10"
+                    aria-label="Tam ekran görüntüle"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"></path>
+                    </svg>
+                  </button>
                 </div>
               ))}
             </div>
@@ -246,11 +310,16 @@ export default function HomePage() {
             <div className="grid md:grid-cols-2 gap-8 items-center">
               <div className="relative h-[400px] rounded-lg overflow-hidden">
                 <Image
-                  src="/images/sanatci.webp"
-                  alt="Sanatçı"
+                  src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/logo.jpg-6inyRDmRv1XeBIEf3AEWqxLJL3YtgG.jpeg"
+                  alt="Mazzgord Logo"
                   fill
-                  className="object-cover cursor-pointer"
-                  onClick={() => setSelectedImage({ src: "/images/sanatci.webp", alt: "Sanatçı" })}
+                  className="object-contain bg-black"
+                  onClick={() =>
+                    setSelectedImage({
+                      src: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/logo.jpg-6inyRDmRv1XeBIEf3AEWqxLJL3YtgG.jpeg",
+                      alt: "Mazzgord Logo",
+                    })
+                  }
                 />
               </div>
               <div>
@@ -266,44 +335,6 @@ export default function HomePage() {
                   <Button variant="outline">Daha Fazla Bilgi</Button>
                 </Link>
               </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Testimonials */}
-        <section className="py-12 bg-muted/50">
-          <div className="container mx-auto px-6 md:px-8">
-            <h2 className="text-2xl md:text-3xl font-bold text-center mb-10">Müşteri Yorumları</h2>
-            <div className="grid md:grid-cols-3 gap-6">
-              {[1, 2, 3].map((item) => (
-                <div key={item} className="bg-background p-6 rounded-lg shadow-sm">
-                  <div className="flex gap-1 mb-4">
-                    {[...Array(5)].map((_, i) => (
-                      <svg
-                        key={i}
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="16"
-                        height="16"
-                        viewBox="0 0 24 24"
-                        fill="currentColor"
-                        className="text-primary"
-                      >
-                        <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
-                      </svg>
-                    ))}
-                  </div>
-                  <p className="text-muted-foreground mb-4">"Satın aldığım tablo beklentilerimi aştı."</p>
-                  <div className="flex items-center gap-3">
-                    <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center">
-                      <User className="h-5 w-5" />
-                    </div>
-                    <div>
-                      <p className="font-medium">Müşteri {item}</p>
-                      <p className="text-sm text-muted-foreground">Sanat Koleksiyoncusu</p>
-                    </div>
-                  </div>
-                </div>
-              ))}
             </div>
           </div>
         </section>
@@ -390,148 +421,7 @@ export default function HomePage() {
       </main>
 
       {/* Footer */}
-      <footer className="border-t bg-muted/30">
-        <div className="container mx-auto px-6 md:px-8 py-8 md:py-12">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-            <div>
-              <h3 className="font-semibold mb-3">Mazzgord</h3>
-              <p className="text-sm text-muted-foreground">
-                Özgün sanat eserleri ile yaşam alanlarınıza değer katıyorum.
-              </p>
-            </div>
-            <div>
-              <h3 className="font-semibold mb-3">Hızlı Bağlantılar</h3>
-              <ul className="space-y-2 text-sm">
-                <li>
-                  <Link href="/" className="text-muted-foreground hover:text-foreground">
-                    Ana Sayfa
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/galeri" className="text-muted-foreground hover:text-foreground">
-                    Galeri
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/hakkimda" className="text-muted-foreground hover:text-foreground">
-                    Hakkımda
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/koleksiyonlar" className="text-muted-foreground hover:text-foreground">
-                    Koleksiyonlar
-                  </Link>
-                </li>
-              </ul>
-            </div>
-            <div>
-              <h3 className="font-semibold mb-3">Bilgiler</h3>
-              <ul className="space-y-2 text-sm">
-                <li>
-                  <Link href="/satis-kosullari" className="text-muted-foreground hover:text-foreground">
-                    Satış Koşulları
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/iletisim" className="text-muted-foreground hover:text-foreground">
-                    İletişim
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/kargo-teslimat" className="text-muted-foreground hover:text-foreground">
-                    Kargo ve Teslimat
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/iade-politikasi" className="text-muted-foreground hover:text-foreground">
-                    İade Politikası
-                  </Link>
-                </li>
-              </ul>
-            </div>
-            <div>
-              <h3 className="font-semibold mb-3">İletişim</h3>
-              <address className="not-italic text-sm text-muted-foreground">
-                <p>... Sokak No: 1, Daire: 1</p>
-                <p>Pamukkale, Denizli</p>
-                <p className="mt-2">info@mazzgord.com</p>
-                <p>+1 (631) 316 8030</p>
-              </address>
-            </div>
-          </div>
-          <div className="border-t mt-8 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
-            <p className="text-sm text-muted-foreground">
-              © {new Date().getFullYear()} Mazzgord. Tüm hakları saklıdır.
-            </p>
-            <div className="flex gap-4">
-              <Button variant="ghost" size="icon" aria-label="Facebook">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="20"
-                  height="20"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" />
-                </svg>
-              </Button>
-              <Button variant="ghost" size="icon" aria-label="Instagram">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="20"
-                  height="20"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
-                  <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
-                  <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" />
-                </svg>
-              </Button>
-              <Button variant="ghost" size="icon" aria-label="Twitter">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="20"
-                  height="20"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z" />
-                </svg>
-              </Button>
-              <Button variant="ghost" size="icon" aria-label="Pinterest">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="20"
-                  height="20"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="M8 12h8" />
-                  <path d="M12 8v8" />
-                  <circle cx="12" cy="12" r="10" />
-                </svg>
-              </Button>
-            </div>
-          </div>
-        </div>
-      </footer>
+      <Footer />
 
       {/* Tam ekran görüntüleme modalı */}
       {selectedImage && (
