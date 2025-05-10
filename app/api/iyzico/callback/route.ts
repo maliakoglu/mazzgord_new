@@ -1,44 +1,50 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { Iyzico } from "@/lib/iyzico"
-
-// iyzico yapılandırması
-const iyzicoConfig = {
-  apiKey: process.env.IYZICO_API_KEY || "",
-  secretKey: process.env.IYZICO_SECRET_KEY || "",
-  baseUrl: "https://sandbox-api.iyzipay.com", // Sandbox ortamı için
-  merchantId: process.env.IYZICO_MERCHANT_ID || "",
-}
-
-// iyzico istemcisi oluştur
-const iyzico = new Iyzico(iyzicoConfig)
+import { completePayment } from "@/lib/iyzico"
 
 export async function POST(request: NextRequest) {
   try {
+    // Form verilerini al
     const formData = await request.formData()
-
-    // iyzico'dan gelen parametreleri al
     const paymentId = formData.get("paymentId") as string
     const conversationId = formData.get("conversationId") as string
     const mdStatus = formData.get("mdStatus") as string
 
-    // mdStatus değeri 1 ise 3D doğrulama başarılı
+    console.log("Callback alındı:", { paymentId, conversationId, mdStatus })
+
+    // mdStatus kontrolü
     if (mdStatus === "1") {
-      // 3D ödemeyi tamamla
-      const result = await iyzico.complete3DSecurePayment(paymentId, conversationId)
+      // 3D doğrulama başarılı, ödemeyi tamamla
+      const result = await completePayment(paymentId, conversationId)
 
       if (result.status === "success") {
-        // Ödeme başarılı - başarılı sayfasına yönlendir
+        console.log("Ödeme başarıyla tamamlandı:", result)
+
+        // Ödeme başarılı, başarılı sayfasına yönlendir
         return NextResponse.redirect(new URL("/odeme/basarili", request.url))
       } else {
-        // Ödeme başarısız - hata sayfasına yönlendir
-        return NextResponse.redirect(new URL("/odeme/basarisiz", request.url))
+        // Ödeme başarısız, hata sayfasına yönlendir
+        console.error("Ödeme tamamlama hatası:", result)
+        return NextResponse.redirect(
+          new URL(
+            "/odeme/hata?error=" + encodeURIComponent(result.errorMessage || "Ödeme işlemi tamamlanamadı"),
+            request.url,
+          ),
+        )
       }
     } else {
-      // 3D doğrulama başarısız - hata sayfasına yönlendir
-      return NextResponse.redirect(new URL("/odeme/basarisiz", request.url))
+      // 3D doğrulama başarısız
+      console.error("3D doğrulama başarısız:", mdStatus)
+      return NextResponse.redirect(
+        new URL("/odeme/hata?error=" + encodeURIComponent("3D Secure doğrulaması başarısız"), request.url),
+      )
     }
   } catch (error: any) {
-    console.error("iyzico callback hatası:", error)
-    return NextResponse.redirect(new URL("/odeme/basarisiz", request.url))
+    console.error("Callback hatası:", error)
+    return NextResponse.redirect(
+      new URL(
+        "/odeme/hata?error=" + encodeURIComponent(error.message || "Ödeme işlemi sırasında bir hata oluştu"),
+        request.url,
+      ),
+    )
   }
 }

@@ -1,112 +1,101 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { Iyzico } from "@/lib/iyzico"
-import { v4 as uuidv4 } from "uuid"
-
-// iyzico yapılandırması
-const iyzicoConfig = {
-  apiKey: process.env.IYZICO_API_KEY || "",
-  secretKey: process.env.IYZICO_SECRET_KEY || "",
-  baseUrl: "https://sandbox-api.iyzipay.com", // Sandbox ortamı için
-  merchantId: process.env.IYZICO_MERCHANT_ID || "",
-}
-
-// iyzico istemcisi oluştur
-const iyzico = new Iyzico(iyzicoConfig)
+import { createPayment, generateUniqueConversationId } from "@/lib/iyzico"
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
     const { cartItems, userInfo, totalAmount } = body
 
-    // Gerekli alanları kontrol et
     if (!cartItems || !userInfo || !totalAmount) {
-      return NextResponse.json(
-        { error: "Eksik bilgi: sepet öğeleri, kullanıcı bilgileri ve toplam tutar gereklidir" },
-        { status: 400 },
-      )
+      return NextResponse.json({ error: "Gerekli bilgiler eksik" }, { status: 400 })
     }
 
-    // Kart bilgilerini kontrol et
-    if (!userInfo.paymentCard) {
-      return NextResponse.json({ error: "Kart bilgileri eksik" }, { status: 400 })
-    }
+    // Benzersiz bir conversationId oluştur
+    const conversationId = generateUniqueConversationId()
+    console.log("Oluşturulan conversationId:", conversationId)
 
-    const conversationId = uuidv4()
-    const basketId = `basket_${Date.now()}`
+    // Ürün bilgilerini hazırla
+    const basketItems = cartItems.map((item: any, index: number) => ({
+      id: `item_${index}`,
+      name: item.title,
+      category1: "Sanat",
+      itemType: "PHYSICAL",
+      price: item.price.toString(),
+    }))
 
-    // Kart bilgileri istemci tarafında girilecek ve bu endpointe gönderilecek
-    const paymentRequest = {
+    // Kullanıcı bilgilerini ayır
+    const nameParts = userInfo.name.split(" ")
+    const firstName = nameParts[0] || "İsim"
+    const lastName = nameParts.length > 1 ? nameParts.slice(1).join(" ") : "Soyisim"
+
+    // Ödeme bilgilerini hazırla
+    const paymentData = {
       locale: "tr",
-      conversationId: conversationId,
+      conversationId,
       price: totalAmount.toString(),
       paidPrice: totalAmount.toString(),
       currency: "TRY",
       installment: "1",
-      basketId: basketId,
+      basketId: `basket_${Date.now()}`,
       paymentChannel: "WEB",
       paymentGroup: "PRODUCT",
       callbackUrl: `${process.env.NEXT_PUBLIC_SITE_URL}/api/iyzico/callback`,
-
-      // Kart bilgileri burada olacak (istemci tarafından gönderilecek)
       paymentCard: userInfo.paymentCard,
-
       buyer: {
-        id: `user_${Date.now()}`,
-        name: userInfo.name.split(" ")[0] || "Test",
-        surname: userInfo.name.split(" ").slice(1).join(" ") || "User",
-        gsmNumber: userInfo.phone || "+905555555555",
-        email: userInfo.email || "test@example.com",
-        identityNumber: "74300864791",
-        registrationAddress: userInfo.address || "Test Address",
+        id: `buyer_${Date.now()}`,
+        name: firstName,
+        surname: lastName,
+        gsmNumber: userInfo.phone,
+        email: userInfo.email,
+        identityNumber: "11111111111", // Sandbox için sabit değer
+        registrationAddress: userInfo.address,
         ip: request.headers.get("x-forwarded-for") || "127.0.0.1",
         city: "Istanbul",
         country: "Turkey",
       },
-
       shippingAddress: {
-        contactName: userInfo.name || "Test User",
+        contactName: userInfo.name,
         city: "Istanbul",
         country: "Turkey",
-        address: userInfo.address || "Test Address",
+        address: userInfo.address,
       },
-
       billingAddress: {
-        contactName: userInfo.name || "Test User",
+        contactName: userInfo.name,
         city: "Istanbul",
         country: "Turkey",
-        address: userInfo.address || "Test Address",
+        address: userInfo.address,
       },
-
-      basketItems: cartItems.map((item: any) => ({
-        id: item.id.toString(),
-        name: item.name,
-        category1: "Sanat",
-        itemType: "PHYSICAL",
-        price: (item.price * item.quantity).toString(),
-      })),
+      basketItems,
     }
 
-    console.log("iyzico payment request:", JSON.stringify(paymentRequest, null, 2))
+    // Ödeme başlat
+    const paymentResult = await createPayment(paymentData)
 
-    try {
-      // 3D Secure ile ödeme başlat
-      const result = await iyzico.create3DSecurePayment(paymentRequest)
-      console.log("iyzico payment result:", JSON.stringify(result, null, 2))
+    // Ödeme başlatma sonucunu kontrol et
+    if (paymentResult.status === "success") {
+      console.log("Ödeme başarıyla başlatıldı, 3D Secure formuna yönlendiriliyor")
 
-      if (result.status === "success") {
-        return NextResponse.json(result)
-      } else {
-        return NextResponse.json(
-          { error: result.errorMessage || "Ödeme başlatılamadı", details: result },
-          { status: 400 },
-        )
-      }
-    } catch (error: any) {
-      console.error("iyzico API error:", error)
-      return NextResponse.json({ error: `iyzico API hatası: ${error.message}`, details: error }, { status: 500 })
+      // 3D Secure HTML içeriğini döndür
+      return NextResponse.json({
+        status: "success",
+        threeDSHtmlContent: paymentResult.threeDSHtmlContent,
+        conversationId: conversationId,
+      })
+    } else {
+      // Hata durumunda
+      console.error("Ödeme başlatma hatası:", paymentResult.errorCode, paymentResult.errorMessage)
+
+      return NextResponse.json(
+        {
+          status: "error",
+          errorCode: paymentResult.errorCode,
+          errorMessage: paymentResult.errorMessage,
+        },
+        { status: 400 },
+      )
     }
   } catch (error: any) {
-    console.error("iyzico ödeme hatası:", error)
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    console.error("Ödeme token hatası:", error)
+    return NextResponse.json({ error: error.message || "Ödeme işlemi başlatılamadı" }, { status: 500 })
   }
 }
